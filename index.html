@@ -9,7 +9,7 @@
     <!-- 引入 marked.js 用于解析 Markdown -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
-        /* --- 样式保持不变，稍微增加了文章详情页的样式 --- */
+        /* --- CSS 样式部分 --- */
         :root {
             --glass-border: rgba(255, 255, 255, 0.4);
             --glass-bg: rgba(255, 255, 255, 0.15);
@@ -59,8 +59,18 @@
         .container { max-width: 800px; margin: 0 auto; padding: 40px 20px; position: relative; z-index: 1; }
 
         header { text-align: center; padding: 60px 20px; margin-bottom: 40px; animation: floatUp 0.8s ease-out; }
-        。avatar { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255,255,255,0.6); margin-bottom: 20px; }
-        h1 { font-weight: 700; letter-spacing: -0.5px; margin-bottom: 10px; }
+        
+        .avatar { 
+            width: 100px; 
+            height: 100px; 
+            border-radius: 50%; 
+            object-fit: cover; 
+            border: 2px solid rgba(255,255,255,0.6); 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 20px; 
+        }
+
+        h1 { font-weight: 700; letter-spacing: -0.5px; margin-bottom: 10px; text-shadow: 0 2px 10px rgba(0,0,0,0.1); }
         p.bio { color: var(--text-secondary); font-size: 1.1rem; }
 
         /* 文章列表样式 */
@@ -74,50 +84,57 @@
         .article-content { padding: 40px; line-height: 1.8; font-size: 1.1rem; animation: floatUp 0.5s ease-out; }
         .article-content h1, .article-content h2 { margin-top: 30px; margin-bottom: 15px; font-weight: 600; }
         .article-content p { margin-bottom: 20px; }
-        .article-content img { max-width: 100%; border-radius: 12px; margin: 20px 0; }
-        .back-btn { display: inline-block; margin-bottom: 20px; padding: 10px 20px; background: rgba(255,255,255,0.2); border-radius: 12px; text-decoration: none; color: white; transition: 0.3s; }
-        .back-btn:hover { background: rgba(255,255,255,0.4); }
+        .article-content img { max-width: 100%; border-radius: 12px; margin: 20px 0; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .article-content ul, .article-content ol { margin-left: 20px; margin-bottom: 20px; }
+        .article-content blockquote { border-left: 4px solid rgba(255,255,255,0.5); padding-left: 15px; margin: 20px 0; color: rgba(255,255,255,0.9); font-style: italic; }
+        
+        .back-btn { display: inline-block; margin-bottom: 20px; padding: 10px 20px; background: rgba(255,255,255,0.2); border-radius: 12px; text-decoration: none; color: white; transition: 0.3s; backdrop-filter: blur(10px); }
+        .back-btn:hover { background: rgba(255,255,255,0.4); transform: translateX(-5px); }
 
         .bottom-nav { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 500px; height: 60px; display: flex; justify-content: space-around; align-items: center; z-index: 1000; border-radius: 30px; animation: floatUp 1s ease-out; }
-        .nav-item { color: var(--text-primary); text-decoration: none; font-size: 1.2rem; padding: 10px 20px; border-radius: 15px; transition: all 0.3s ease; }
-        .nav-item:hover { background: rgba(255, 255, 255, 0.2); }
+        .nav-item { color: var(--text-primary); text-decoration: none; font-size: 1.2rem; padding: 10px 20px; border-radius: 15px; transition: all 0.3s ease; display: flex; align-items: center; gap: 8px; }
+        .nav-item:hover { background: rgba(255, 255, 255, 0.2); box-shadow: 0 0 15px rgba(255,255,255,0.3); }
 
         @media (max-width: 600px) {
-            。container { padding: 20px 15px; }
-            。post-card { padding: 25px; }
+            .container { padding: 20px 15px; }
+            .post-card { padding: 25px; }
             .article-content { padding: 25px; }
-            。bottom-nav { width: 95%; height: 55px; }
+            .bottom-nav { width: 95%; height: 55px; }
         }
     </style>
 </head>
 <body>
 
     <div class="container" id="app">
-        <!-- 内容将通过 JS 动态注入 -->
+        <!-- 头部信息 -->
         <header class="liquid-glass">
-            <img src="https://create.codelab.club/avatar/2568_1756055650.png" alt="Avatar" class="avatar">
+            <!-- 👇 已更新为你提供的新头像链接 -->
+            <img src="https://avatars.githubusercontent.com/u/187166523?s=96&v=4" alt="LafiteLF Avatar" class="avatar">
             <h1>LafiteLF's Blog</h1>
-            <p class="bio">Liquid Glass Style · Powered by GitHub API</p>
+            <p class="bio">探索数字边界 · 记录生活点滴 · Code & Life</p>
         </header>
         
-        <!-- 这里会显示文章列表或文章详情 -->
+        <!-- 动态内容区域 -->
         <div id="content-area"></div>
     </div>
 
+    <!-- 底部导航 -->
     <nav class="bottom-nav liquid-glass">
-        <a href="/" class="nav-item"><i class="fas fa-home"></i> 首页</a>
+        <a href="#/" class="nav-item"><i class="fas fa-home"></i> 首页</a>
         <a href="#" class="nav-item"><i class="fas fa-archive"></i> 归档</a>
         <a href="#" class="nav-item"><i class="fas fa-user"></i> 关于</a>
+        <a href="https://github.com/LafiteLF" target="_blank" class="nav-item"><i class="fab fa-github"></i></a>
     </nav>
 
+    <!-- 逻辑脚本 -->
     <script>
         // ==========================================
-        // ⚙️ 配置区域 (请修改这里)
+        // ⚙️ 配置区域
         // ==========================================
         const CONFIG = {
-            username: 'LafiteLF',       // 你的 GitHub 用户名
-            repo: 'LafiteLF.github.io', // 你的仓库名 (如果是项目页则是项目名)
-            path: 'blog'                // markdown 文件所在的文件夹路径
+            username: 'LafiteLF',          // 你的 GitHub 用户名
+            repo: 'LafiteLF.github.io',    // 你的仓库名 (如果是项目页则是项目名)
+            path: 'blog'                   // markdown 文件所在的文件夹路径
         };
 
         const contentArea = document.getElementById('content-area');
@@ -125,7 +142,6 @@
 
         // 初始化
         async function init() {
-            // 检查 URL hash，判断是看列表还是看文章
             const hash = window.location.hash;
             
             if (hash.startsWith('#/post/')) {
@@ -144,19 +160,29 @@
             
             try {
                 const response = await fetch(apiUrl);
-                if (!response.ok) throw new Error('API Limit or Repo Error');
+                
+                // 详细错误处理
+                if (response.status === 404) {
+                    throw new Error(`找不到文件夹 '${CONFIG.path}'。请在仓库根目录下创建一个名为 blog 的文件夹，并在里面放入 .md 文件。`);
+                }
+                if (!response.ok) throw new Error(`API 请求失败 (状态码: ${response.status})。可能是触发了频率限制，请稍后再试。`);
                 
                 const data = await response.json();
+                
                 // 过滤出 .md 文件并按文件名排序 (倒序，新的在前)
                 const mdFiles = data
-                    。filter(file => file.name.endsWith('.md'))
-                    。sort((a, b) => b.name.localeCompare(a.name));
+                    .filter(file => file.name.endsWith('.md'))
+                    .sort((a, b) => b.name.localeCompare(a.name));
+
+                if (mdFiles.length === 0) {
+                     contentArea.innerHTML = `<p style="text-align:center; padding: 20px;">文件夹 '${CONFIG.path}' 是空的，或者没有找到 .md 文件。</p>`;
+                     return;
+                }
 
                 let html = '';
                 mdFiles.forEach(file => {
-                    // 简单的元数据提取逻辑：假设文件名就是标题，或者你可以解析文件内容
-                    // 这里为了速度，直接用文件名作为标题展示
-                    const title = file.name.替换('.md', ''); 
+                    // 简单的元数据提取逻辑：假设文件名就是标题
+                    const title = file.name.replace('.md', ''); 
                     
                     html += `
                         <article class="post-card liquid-glass" onclick="window.location.hash='#/post/${file.name}'">
@@ -170,7 +196,13 @@
 
             } catch (error) {
                 console.error(error);
-                contentArea.innerHTML = `<p style="text-align:center; color:red;">Failed to load posts.<br>${error.message}</p>`;
+                // 将错误信息显示在页面上，方便调试
+                contentArea.innerHTML = `
+                    <div class="liquid-glass" style="padding: 30px; text-align: center; color: #ffcccc;">
+                        <h3><i class="fas fa-exclamation-triangle"></i> 加载失败</h3>
+                        <p style="margin-top: 10px; font-size: 0.9rem;">${error.message}</p>
+                    </div>
+                `;
             }
         }
 
@@ -179,8 +211,10 @@
             contentArea.innerHTML = '<p style="text-align:center; padding: 20px;">Loading article...</p>';
 
             try {
-                // 第一步：获取文件的下载链接 (download_url)
+                // 第一步：获取文件的下载链接
                 const listRes = await fetch(`${apiUrl}/${fileName}`);
+                if(!listRes.ok) throw new Error("找不到该文章文件");
+                
                 const fileData = await listRes.json();
                 
                 // 第二步：获取 Markdown 原始内容
@@ -198,7 +232,7 @@
                 `;
 
             } catch (error) {
-                contentArea.innerHTML = `<p style="text-align:center;">Error loading article.</p>`;
+                contentArea.innerHTML = `<p style="text-align:center;">Error loading article: ${error.message}</p>`;
             }
         }
 
