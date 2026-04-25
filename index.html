@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LafiteLF's Liquid Blog</title>
+    <!-- 引入图标库 -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- 引入 marked.js 用于解析 Markdown -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        /* --- 样式保持不变，稍微增加了文章详情页的样式 --- */
+        :root {
+            --glass-border: rgba(255, 255, 255, 0.4);
+            --glass-bg: rgba(255, 255, 255, 0.15);
+            --glass-highlight: rgba(255, 255, 255, 0.5);
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.8);
+            --blur-strength: 20px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-font-smoothing: antialiased; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+            background: linear-gradient(-45deg, #ff9a9e, #fad0c4, #a18cd1, #fbc2eb, #8fd3f4, #84fab0);
+            background-size: 400% 400%;
+            animation: gradientFlow 15s ease infinite;
+            padding-bottom: 100px;
+        }
+
+        @keyframes gradientFlow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes floatUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .liquid-glass {
+            background: var(--glass-bg);
+            backdrop-filter: blur(var(--blur-strength)) saturate(180%);
+            -webkit-backdrop-filter: blur(var(--blur-strength)) saturate(180%);
+            border: 1px solid var(--glass-border);
+            border-top: 1px solid var(--glass-highlight);
+            border-left: 1px solid rgba(255,255,255,0.2);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15), inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .container { max-width: 800px; margin: 0 auto; padding: 40px 20px; position: relative; z-index: 1; }
+
+        header { text-align: center; padding: 60px 20px; margin-bottom: 40px; animation: floatUp 0.8s ease-out; }
+        .avatar { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255,255,255,0.6); margin-bottom: 20px; }
+        h1 { font-weight: 700; letter-spacing: -0.5px; margin-bottom: 10px; }
+        p.bio { color: var(--text-secondary); font-size: 1.1rem; }
+
+        /* 文章列表样式 */
+        .post-card { padding: 30px; margin-bottom: 25px; transition: all 0.3s ease; cursor: pointer; animation: floatUp 0.8s ease-out backwards; }
+        .post-card:hover { transform: scale(1.02) translateY(-5px); background: rgba(255, 255, 255, 0.2); }
+        .post-date { font-size: 0.85rem; color: rgba(255,255,255,0.7); margin-bottom: 8px; display: block; }
+        .post-title { font-size: 1.5rem; font-weight: 600; margin-bottom: 10px; }
+        .post-excerpt { color: var(--text-secondary); line-height: 1.6; }
+
+        /* 文章详情页面样式 */
+        .article-content { padding: 40px; line-height: 1.8; font-size: 1.1rem; animation: floatUp 0.5s ease-out; }
+        .article-content h1, .article-content h2 { margin-top: 30px; margin-bottom: 15px; font-weight: 600; }
+        .article-content p { margin-bottom: 20px; }
+        .article-content img { max-width: 100%; border-radius: 12px; margin: 20px 0; }
+        .back-btn { display: inline-block; margin-bottom: 20px; padding: 10px 20px; background: rgba(255,255,255,0.2); border-radius: 12px; text-decoration: none; color: white; transition: 0.3s; }
+        .back-btn:hover { background: rgba(255,255,255,0.4); }
+
+        .bottom-nav { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 500px; height: 60px; display: flex; justify-content: space-around; align-items: center; z-index: 1000; border-radius: 30px; animation: floatUp 1s ease-out; }
+        .nav-item { color: var(--text-primary); text-decoration: none; font-size: 1.2rem; padding: 10px 20px; border-radius: 15px; transition: all 0.3s ease; }
+        .nav-item:hover { background: rgba(255, 255, 255, 0.2); }
+
+        @media (max-width: 600px) {
+            .container { padding: 20px 15px; }
+            .post-card { padding: 25px; }
+            .article-content { padding: 25px; }
+            .bottom-nav { width: 95%; height: 55px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container" id="app">
+        <!-- 内容将通过 JS 动态注入 -->
+        <header class="liquid-glass">
+            <img src="你的头像地址.jpg" alt="Avatar" class="avatar">
+            <h1>LafiteLF's Blog</h1>
+            <p class="bio">Liquid Glass Style · Powered by GitHub API</p>
+        </header>
+        
+        <!-- 这里会显示文章列表或文章详情 -->
+        <div id="content-area"></div>
+    </div>
+
+    <nav class="bottom-nav liquid-glass">
+        <a href="/" class="nav-item"><i class="fas fa-home"></i> 首页</a>
+        <a href="#" class="nav-item"><i class="fas fa-archive"></i> 归档</a>
+        <a href="#" class="nav-item"><i class="fas fa-user"></i> 关于</a>
+    </nav>
+
+    <script>
+        // ==========================================
+        // ⚙️ 配置区域 (请修改这里)
+        // ==========================================
+        const CONFIG = {
+            username: 'LafiteLF',       // 你的 GitHub 用户名
+            repo: 'LafiteLF.github.io', // 你的仓库名 (如果是项目页则是项目名)
+            path: 'blog'                // markdown 文件所在的文件夹路径
+        };
+
+        const contentArea = document.getElementById('content-area');
+        const apiUrl = `https://api.github.com/repos/${CONFIG.username}/${CONFIG.repo}/contents/${CONFIG.path}`;
+
+        // 初始化
+        async function init() {
+            // 检查 URL hash，判断是看列表还是看文章
+            const hash = window.location.hash;
+            
+            if (hash.startsWith('#/post/')) {
+                // 查看文章模式
+                const fileName = hash.replace('#/post/', '');
+                loadArticle(fileName);
+            } else {
+                // 首页列表模式
+                loadPostList();
+            }
+        }
+
+        // 1. 加载文章列表
+        async function loadPostList() {
+            contentArea.innerHTML = '<p style="text-align:center; padding: 20px;">Loading posts...</p>';
+            
+            try {
+                const response = await fetch(apiUrl);
+                if (!response.ok) throw new Error('API Limit or Repo Error');
+                
+                const data = await response.json();
+                // 过滤出 .md 文件并按文件名排序 (倒序，新的在前)
+                const mdFiles = data
+                    。filter(file => file.name.endsWith('.md'))
+                    。sort((a, b) => b.name.localeCompare(a.name));
+
+                let html = '';
+                mdFiles.forEach(file => {
+                    // 简单的元数据提取逻辑：假设文件名就是标题，或者你可以解析文件内容
+                    // 这里为了速度，直接用文件名作为标题展示
+                    const title = file.name.替换('.md', ''); 
+                    
+                    html += `
+                        <article class="post-card liquid-glass" onclick="window.location.hash='#/post/${file.name}'">
+                            <span class="post-date">${new Date(file.sha).toLocaleDateString()}</span>
+                            <h2 class="post-title">${title}</h2>
+                            <p class="post-excerpt">Click to read more about ${title}...</p>
+                        </article>
+                    `;
+                });
+                contentArea.innerHTML = html;
+
+            } catch (error) {
+                console.error(error);
+                contentArea.innerHTML = `<p style="text-align:center; color:red;">Failed to load posts.<br>${error.message}</p>`;
+            }
+        }
+
+        // 2. 加载具体文章内容
+        async function loadArticle(fileName) {
+            contentArea.innerHTML = '<p style="text-align:center; padding: 20px;">Loading article...</p>';
+
+            try {
+                // 第一步：获取文件的下载链接 (download_url)
+                const listRes = await fetch(`${apiUrl}/${fileName}`);
+                const fileData = await listRes.json();
+                
+                // 第二步：获取 Markdown 原始内容
+                const rawRes = await fetch(fileData.download_url);
+                const markdownText = await rawRes.text();
+
+                // 第三步：解析 Markdown 并渲染
+                const htmlContent = marked.parse(markdownText);
+                
+                contentArea.innerHTML = `
+                    <div class="article-content liquid-glass">
+                        <a href="#/" class="back-btn"><i class="fas fa-arrow-left"></i> Back to Home</a>
+                        ${htmlContent}
+                    </div>
+                `;
+
+            } catch (error) {
+                contentArea.innerHTML = `<p style="text-align:center;">Error loading article.</p>`;
+            }
+        }
+
+        // 监听路由变化
+        window.addEventListener('hashchange', init);
+        // 页面加载时运行
+        init();
+    </script>
+</body>
+</html>
