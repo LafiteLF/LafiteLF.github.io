@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LafiteLF's Liquid Blog</title>
-    <!-- 引入图标库 -->
+    <!-- 引入图标库 (用于显示文件和UI图标) -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <!-- 引入 marked.js 用于解析 Markdown -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
@@ -91,15 +91,72 @@
         .back-btn { display: inline-block; margin-bottom: 20px; padding: 10px 20px; background: rgba(255,255,255,0.2); border-radius: 12px; text-decoration: none; color: white; transition: 0.3s; backdrop-filter: blur(10px); }
         .back-btn:hover { background: rgba(255,255,255,0.4); transform: translateX(-5px); }
 
+        /* 底部导航 */
         .bottom-nav { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 500px; height: 60px; display: flex; justify-content: space-around; align-items: center; z-index: 1000; border-radius: 30px; animation: floatUp 1s ease-out; }
         .nav-item { color: var(--text-primary); text-decoration: none; font-size: 1.2rem; padding: 10px 20px; border-radius: 15px; transition: all 0.3s ease; display: flex; align-items: center; gap: 8px; }
         .nav-item:hover { background: rgba(255, 255, 255, 0.2); box-shadow: 0 0 15px rgba(255,255,255,0.3); }
+
+        /* 弹窗通用样式 (归档 & 下载) */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(5px);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            animation: floatUp 0.3s ease-out;
+        }
+
+        .modal-content {
+            width: 90%;
+            max-width: 600px;
+            max-height: 70vh;
+            padding: 30px;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .modal-title {
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            padding-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* 文件列表样式 */
+        .file-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            margin-bottom: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.2s ease;
+            text-decoration: none;
+            color: white;
+        }
+        .file-item:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: scale(1.02);
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+        .file-icon { font-size: 1.5rem; margin-right: 15px; width: 30px; text-align: center; }
+        .file-info { display: flex; flex-direction: column; }
+        .file-name { font-weight: 600; font-size: 1rem; }
+        .file-meta { font-size: 0.8rem; color: rgba(255,255,255,0.6); margin-top: 4px; }
 
         @media (max-width: 600px) {
             .container { padding: 20px 15px; }
             .post-card { padding: 25px; }
             .article-content { padding: 25px; }
             .bottom-nav { width: 95%; height: 55px; }
+            .modal-content { padding: 20px; }
         }
     </style>
 </head>
@@ -108,7 +165,6 @@
     <div class="container" id="app">
         <!-- 头部信息 -->
         <header class="liquid-glass">
-            <!-- 👇 已更新为你提供的新头像链接 -->
             <img src="https://avatars.githubusercontent.com/u/187166523?s=96&v=4" alt="LafiteLF Avatar" class="avatar">
             <h1>LafiteLF's Blog</h1>
             <p class="bio">探索数字边界 · 记录生活点滴 · Code & Life</p>
@@ -120,11 +176,29 @@
 
     <!-- 底部导航 -->
     <nav class="bottom-nav liquid-glass">
-        <a href="#/" class="nav-item"><i class="fas fa-home"></i> 首页</a>
-        <a href="#" class="nav-item"><i class="fas fa-archive"></i> 归档</a>
-        <a href="#" class="nav-item"><i class="fas fa-user"></i> 关于</a>
+        <a href="#/" class="nav-item" onclick="closeAllModals()"><i class="fas fa-home"></i> 首页</a>
+        <a href="#" class="nav-item" onclick="showArchive()"><i class="fas fa-archive"></i> 归档</a>
+        <a href="#" class="nav-item" onclick="showDownloads()"><i class="fas fa-download"></i> 下载</a>
         <a href="https://github.com/LafiteLF" target="_blank" class="nav-item"><i class="fab fa-github"></i></a>
     </nav>
+
+    <!-- 归档弹窗 -->
+    <div id="archive-modal" class="modal-overlay">
+        <div class="modal-content liquid-glass">
+            <h2 class="modal-title"><i class="fas fa-book"></i> 文章归档</h2>
+            <ul id="archive-list" style="list-style: none;"></ul>
+            <button onclick="closeAllModals()" style="margin-top: 20px; width: 100%; padding: 12px; background: rgba(255,255,255,0.2); border: none; color: white; border-radius: 12px; cursor: pointer; font-weight: bold;">关闭</button>
+        </div>
+    </div>
+
+    <!-- 下载弹窗 -->
+    <div id="download-modal" class="modal-overlay">
+        <div class="modal-content liquid-glass">
+            <h2 class="modal-title"><i class="fas fa-cloud-download-alt"></i> 资源下载</h2>
+            <div id="file-list"></div>
+            <button onclick="closeAllModals()" style="margin-top: 20px; width: 100%; padding: 12px; background: rgba(255,255,255,0.2); border: none; color: white; border-radius: 12px; cursor: pointer; font-weight: bold;">关闭</button>
+        </div>
+    </div>
 
     <!-- 逻辑脚本 -->
     <script>
@@ -133,23 +207,23 @@
         // ==========================================
         const CONFIG = {
             username: 'LafiteLF',          // 你的 GitHub 用户名
-            repo: 'LafiteLF.github.io',    // 你的仓库名 (如果是项目页则是项目名)
-            path: 'blog'                   // markdown 文件所在的文件夹路径
+            repo: 'LafiteLF.github.io',    // 你的仓库名
+            blogPath: 'blog',              // 博客文件夹
+            downloadPath: 'download'       // 下载文件夹
         };
 
         const contentArea = document.getElementById('content-area');
-        const apiUrl = `https://api.github.com/repos/${CONFIG.username}/${CONFIG.repo}/contents/${CONFIG.path}`;
+        const blogApiUrl = `https://api.github.com/repos/${CONFIG.username}/${CONFIG.repo}/contents/${CONFIG.blogPath}`;
+        const downloadApiUrl = `https://api.github.com/repos/${CONFIG.username}/${CONFIG.repo}/contents/${CONFIG.downloadPath}`;
 
         // 初始化
         async function init() {
             const hash = window.location.hash;
             
             if (hash.startsWith('#/post/')) {
-                // 查看文章模式
                 const fileName = hash.replace('#/post/', '');
                 loadArticle(fileName);
             } else {
-                // 首页列表模式
                 loadPostList();
             }
         }
@@ -159,31 +233,21 @@
             contentArea.innerHTML = '<p style="text-align:center; padding: 20px;">Loading posts...</p>';
             
             try {
-                const response = await fetch(apiUrl);
-                
-                // 详细错误处理
-                if (response.status === 404) {
-                    throw new Error(`找不到文件夹 '${CONFIG.path}'。请在仓库根目录下创建一个名为 blog 的文件夹，并在里面放入 .md 文件。`);
-                }
-                if (!response.ok) throw new Error(`API 请求失败 (状态码: ${response.status})。可能是触发了频率限制，请稍后再试。`);
+                const response = await fetch(blogApiUrl);
+                if (response.status === 404) throw new Error(`找不到文件夹 '${CONFIG.blogPath}'`);
+                if (!response.ok) throw new Error(`API 请求失败`);
                 
                 const data = await response.json();
-                
-                // 过滤出 .md 文件并按文件名排序 (倒序，新的在前)
-                const mdFiles = data
-                    .filter(file => file.name.endsWith('.md'))
-                    .sort((a, b) => b.name.localeCompare(a.name));
+                const mdFiles = data.filter(file => file.name.endsWith('.md')).sort((a, b) => b.name.localeCompare(a.name));
 
                 if (mdFiles.length === 0) {
-                     contentArea.innerHTML = `<p style="text-align:center; padding: 20px;">文件夹 '${CONFIG.path}' 是空的，或者没有找到 .md 文件。</p>`;
+                     contentArea.innerHTML = `<p style="text-align:center; padding: 20px;">文件夹 '${CONFIG.blogPath}' 是空的。</p>`;
                      return;
                 }
 
                 let html = '';
                 mdFiles.forEach(file => {
-                    // 简单的元数据提取逻辑：假设文件名就是标题
                     const title = file.name.replace('.md', ''); 
-                    
                     html += `
                         <article class="post-card liquid-glass" onclick="window.location.hash='#/post/${file.name}'">
                             <span class="post-date">${new Date(file.sha).toLocaleDateString()}</span>
@@ -195,33 +259,19 @@
                 contentArea.innerHTML = html;
 
             } catch (error) {
-                console.error(error);
-                // 将错误信息显示在页面上，方便调试
-                contentArea.innerHTML = `
-                    <div class="liquid-glass" style="padding: 30px; text-align: center; color: #ffcccc;">
-                        <h3><i class="fas fa-exclamation-triangle"></i> 加载失败</h3>
-                        <p style="margin-top: 10px; font-size: 0.9rem;">${error.message}</p>
-                    </div>
-                `;
+                contentArea.innerHTML = `<div class="liquid-glass" style="padding: 30px; text-align: center;"><h3>加载失败</h3><p>${error.message}</p></div>`;
             }
         }
 
         // 2. 加载具体文章内容
         async function loadArticle(fileName) {
             contentArea.innerHTML = '<p style="text-align:center; padding: 20px;">Loading article...</p>';
-
             try {
-                // 第一步：获取文件的下载链接
-                const listRes = await fetch(`${apiUrl}/${fileName}`);
-                if(!listRes.ok) throw new Error("找不到该文章文件");
-                
+                const listRes = await fetch(`${blogApiUrl}/${fileName}`);
+                if(!listRes.ok) throw new Error("找不到该文章");
                 const fileData = await listRes.json();
-                
-                // 第二步：获取 Markdown 原始内容
                 const rawRes = await fetch(fileData.download_url);
                 const markdownText = await rawRes.text();
-
-                // 第三步：解析 Markdown 并渲染
                 const htmlContent = marked.parse(markdownText);
                 
                 contentArea.innerHTML = `
@@ -230,16 +280,75 @@
                         ${htmlContent}
                     </div>
                 `;
-
             } catch (error) {
-                contentArea.innerHTML = `<p style="text-align:center;">Error loading article: ${error.message}</p>`;
+                contentArea.innerHTML = `<p style="text-align:center;">Error loading article.</p>`;
             }
         }
 
-        // 监听路由变化
-        window.addEventListener('hashchange', init);
-        // 页面加载时运行
-        init();
-    </script>
-</body>
-</html>
+        // --- 归档功能 ---
+        async function showArchive() {
+            const modal = document.getElementById('archive-modal');
+            const list = document.getElementById('archive-list');
+            if (list.innerHTML === '') {
+                try {
+                    const response = await fetch(blogApiUrl);
+                    const data = await response.json();
+                    const mdFiles = data.filter(file => file.name.endsWith('.md')).sort((a, b) => b.name.localeCompare(a.name));
+                    let html = '';
+                    mdFiles.forEach(file => {
+                        const title = file.name.replace('.md', '');
+                        html += `<li style="padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                                    <a href="#/post/${file.name}" onclick="closeAllModals()" style="color: white; text-decoration: none; display: block; padding: 5px 0;">
+                                        <i class="far fa-file-alt" style="margin-right: 10px;"></i> ${title}
+                                    </a>
+                                 </li>`;
+                    });
+                    list.innerHTML = html;
+                } catch (e) { list.innerHTML = '<li>加载失败</li>'; }
+            }
+            modal.style.display = 'flex';
+        }
+
+        // --- 下载功能 ---
+        async function showDownloads() {
+            const modal = document.getElementById('download-modal');
+            const list = document.getElementById('file-list');
+            if (list.innerHTML === '') {
+                try {
+                    const response = await fetch(downloadApiUrl);
+                    if(response.status === 404) throw new Error(`找不到文件夹 '${CONFIG.downloadPath}'`);
+                    const data = await response.json();
+                    
+                    let html = '';
+                    data.forEach(file => {
+                        // 根据文件扩展名获取图标
+                        let iconClass = 'far fa-file';
+                        if (file.name.endsWith('.zip') || file.name.endsWith('.rar')) iconClass = 'far fa-file-archive';
+                        else if (file.name.endsWith('.pdf')) iconClass = 'far fa-file-pdf';
+                        else if (file.name.endsWith('.jpg') || file.name.endsWith('.png')) iconClass = 'far fa-file-image';
+                        else if (file.name.endsWith('.js') || file.name.endsWith('.html')) iconClass = 'fab fa-js';
+                        
+                        html += `
+                            <a href="${file.download_url}" target="_blank" class="file-item">
+                                <i class="${iconClass} file-icon"></i>
+                                <div class="file-info">
+                                    <span class="file-name">${file.name}</span>
+                                    <span class="file-meta">${(file.size / 1024).toFixed(2)} KB</span>
+                                </div>
+                                <i class="fas fa-external-link-alt" style="margin-left: auto; opacity: 0.6;"></i>
+                            </a>
+                        `;
+                    });
+                    list.innerHTML = html;
+                } catch (error) {
+                    list.innerHTML = `<p style="text-align:center; color: #ffcccc;">${error.message}</p>`;
+                }
+            }
+            modal.style.display = 'flex';
+        }
+
+        // 关闭所有弹窗
+        function closeAllModals() {
+            document.getElementById('archive-modal').style.display = 'none';
+            document.getElementById('download-modal').style.display = 'none';
+        }
