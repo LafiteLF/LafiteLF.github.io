@@ -7,321 +7,373 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
-        /* --- 核心样式 (完全保留你的 UI 风格) --- */
+        /* --- 核心样式 (保留你的 UI) --- */
         :root {
             --glass-border: rgba(255, 255, 255, 0.4);
             --glass-bg: rgba(255, 255, 255, 0.15);
             --glass-highlight: rgba(255, 255, 255, 0.5);
             --text-primary: #ffffff;
             --text-secondary: rgba(255, 255, 255, 0.85);
-            --blur-strength: 20px;
+            --blur-strength: 12px;
+            --corner-radius: 24px;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-font-smoothing: antialiased; }
-
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
-            color: var(--text-primary);
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #8360c3 0%, #2ebf91 100%); /* 默认渐变 */
+            background: linear-gradient(135deg, #d66d75 0%, #e29587 100%); /* 你的粉色系 */
             min-height: 100vh;
-            overflow-x: hidden;
-            /* 你的粉色渐变背景 */
-            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
-            background-size: 400% 400%;
-            animation: gradientFlow 15s ease infinite;
-            padding-bottom: 100px;
+            color: var(--text-primary);
             display: flex;
             flex-direction: column;
             align-items: center;
+            padding-bottom: 80px; /* 为底部导航留空 */
         }
 
-        @keyframes gradientFlow {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        @keyframes floatUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .liquid-glass {
+        /* --- 玻璃拟态卡片 --- */
+        .glass-card {
             background: var(--glass-bg);
-            backdrop-filter: blur(var(--blur-strength)) saturate(180%);
-            -webkit-backdrop-filter: blur(var(--blur-strength)) saturate(180%);
+            backdrop-filter: blur(var(--blur-strength));
+            -webkit-backdrop-filter: blur(var(--blur-strength));
             border: 1px solid var(--glass-border);
-            border-top: 1px solid var(--glass-highlight);
+            border-radius: var(--corner-radius);
             box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
-            border-radius: 24px; /* 统一圆角 */
-            position: relative;
-            overflow: hidden;
-            width: 100%;
-            max-width: 600px; /* 限制最大宽度 */
-            margin: 20px auto;
-            padding: 30px;
-            text-align: center;
-            animation: floatUp 0.8s ease-out;
+            padding: 20px;
+            width: 90%;
+            max-width: 600px;
+            margin: 20px 0;
+            transition: transform 0.2s;
         }
 
-        /* 头像与标题 */
+        /* --- 头部 --- */
+        .header {
+            text-align: center;
+            margin-top: 40px;
+        }
         .avatar {
             width: 80px;
             height: 80px;
             border-radius: 50%;
-            border: 2px solid rgba(255,255,255,0.6);
+            border: 3px solid var(--glass-highlight);
             margin-bottom: 15px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            object-fit: cover;
         }
-        h1 { font-size: 1.5rem; margin-bottom: 8px; font-weight: 700; }
-        .bio { font-size: 0.9rem; opacity: 0.9; }
+        h1 { margin: 0; font-size: 1.5rem; font-weight: 600; }
+        .subtitle { margin-top: 5px; font-size: 0.9rem; opacity: 0.9; }
 
-        /* 文章卡片列表 */
-        .post-card {
-            background: rgba(255, 255, 255, 0.1);
+        /* --- 文章列表 --- */
+        #article-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 100%;
+            max-width: 600px;
+        }
+        .article-item {
+            background: rgba(255,255,255,0.1);
             border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 15px;
-            text-align: left;
+            padding: 15px;
             cursor: pointer;
-            transition: 0.3s;
-            border: 1px solid rgba(255,255,255,0.1);
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
         }
-        .post-card:hover {
-            background: rgba(255, 255, 255, 0.25);
-            transform: translateY(-2px);
+        .article-item:hover {
+            background: rgba(255,255,255,0.25);
         }
-        .post-title { font-weight: 600; margin-bottom: 5px; font-size: 1.1rem; }
-        .post-date { font-size: 0.8rem; opacity: 0.7; margin-bottom: 10px; display: block; }
-        .post-excerpt { font-size: 0.9rem; opacity: 0.8; line-height: 1.5; }
+        .article-icon {
+            margin-right: 15px;
+            font-size: 1.2rem;
+            opacity: 0.8;
+        }
+        .article-info { flex: 1; }
+        .article-title { font-weight: 600; margin: 0 0 5px 0; font-size: 1.1rem; }
+        .article-meta { font-size: 0.8rem; opacity: 0.7; margin: 0; }
 
-        /* 文章内容页 */
-        .article-view { text-align: left; position: relative; }
-        .back-btn {
-            position: absolute;
-            top: 10px;
-            right: 10px;
+        /* --- 阅读视图 --- */
+        #reader-view {
+            display: none; /* 默认隐藏 */
+            width: 90%;
+            max-width: 650px;
+            margin-top: 20px;
+            position: relative;
+        }
+        .reader-content {
+            line-height: 1.8;
+            font-size: 1rem;
+            text-align: left;
+        }
+        .reader-content h1, .reader-content h2, .reader-content h3 { margin-top: 1.5em; }
+        .reader-content p { margin-bottom: 1em; }
+        .reader-content code { background: rgba(0,0,0,0.2); padding: 2px 5px; border-radius: 4px; }
+        .reader-content pre { background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; overflow-x: auto; }
+
+        /* --- 顶部工具栏 (返回/下载) --- */
+        .reader-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+        .btn-icon {
             background: rgba(255,255,255,0.2);
-            width: 35px; height: 35px;
+            border: none;
+            color: white;
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
+            cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
-            text-decoration: none;
-            font-size: 1.2rem;
-            transition: 0.3s;
-            backdrop-filter: blur(5px);
+            transition: background 0.2s;
         }
-        .back-btn:hover { background: rgba(255,255,255,0.4); }
+        .btn-icon:hover { background: rgba(255,255,255,0.4); }
 
-        .content-body { margin-top: 20px; line-height: 1.8; font-size: 1rem; }
-        .content-body img { max-width: 100%; border-radius: 12px; margin: 15px 0; }
-        .content-body h1, .content-body h2 { margin-top: 25px; margin-bottom: 10px; font-weight: 600; }
-        .content-body p { margin-bottom: 15px; }
-
-        /* 底部导航栏 (纯图标) */
+        /* --- 底部导航栏 --- */
         .bottom-nav {
             position: fixed;
-            bottom: 30px;
+            bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
-            width: 200px;
-            height: 60px;
-            background: rgba(255, 255, 255, 0.25);
+            background: rgba(255, 255, 255, 0.2);
             backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.4);
             border-radius: 30px;
+            padding: 10px 25px;
             display: flex;
-            justify-content: space-around;
-            align-items: center;
-            z-index: 1000;
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
-            padding: 0 10px;
+            gap: 25px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.3);
+            z-index: 100;
         }
-
         .nav-item {
             color: var(--text-primary);
-            font-size: 1.4rem;
-            transition: 0.3s;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: transform 0.2s, color 0.2s;
+            opacity: 0.7;
         }
-
-        .nav-item:hover {
-            background: rgba(255, 255, 255, 0.3);
+        .nav-item:hover, .nav-item.active {
+            opacity: 1;
             transform: scale(1.1);
+            color: #fff;
         }
 
-        /* 归档列表样式 */
-        .archive-list { list-style: none; text-align: left; }
-        .archive-item { padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
-        .archive-link { text-decoration: none; color: white; display: flex; justify-content: space-between; }
-        .archive-link:hover { opacity: 0.7; }
+        /* --- 归档弹窗 --- */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 200;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(5px);
+        }
+        .modal-content {
+            background: #222; /* 深色背景方便阅读列表 */
+            padding: 20px;
+            border-radius: 20px;
+            width: 80%;
+            max-width: 500px;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+        .modal-item {
+            padding: 10px 0;
+            border-bottom: 1px solid #444;
+            color: #fff;
+            cursor: pointer;
+        }
+        .modal-item:hover { color: #d66d75; }
     </style>
 </head>
 <body>
 
-    <div id="app">
-        <!-- 头部信息 -->
-        <header class="liquid-glass">
-            <img src="https://avatars.githubusercontent.com/u/187166523?s=96&v=4" alt="Avatar" class="avatar">
-            <h1>LafiteLF's Blog</h1>
-            <p class="bio">探索数字边界 · 记录生活点滴</p>
-        </header>
-
-        <!-- 动态内容区域 -->
-        <main id="content-area" class="liquid-glass">
-            <!-- JS 会在这里渲染内容 -->
-            <p>加载中...</p>
-        </main>
+    <!-- 头部 -->
+    <div class="glass-card header">
+        <img src="https://avatars.githubusercontent.com/u/170415266" alt="Avatar" class="avatar">
+        <h1>LafiteLF's Blog</h1>
+        <div class="subtitle">探索数字边界 · 记录生活点滴</div>
     </div>
 
-    <!-- 底部导航栏 (纯图标) -->
-    <nav class="bottom-nav">
-        <a href="#/" class="nav-item" onclick="loadHome()"><i class="fas fa-home"></i></a>
-        <a href="#/archive" class="nav-item" onclick="loadArchive()"><i class="fas fa-archive"></i></a>
-        <a href="#" class="nav-item"><i class="fas fa-user"></i></a>
-        <a href="https://github.com/LafiteLF" target="_blank" class="nav-item"><i class="fab fa-github"></i></a>
-    </nav>
+    <!-- 文章列表视图 -->
+    <div id="article-list">
+        <!-- JS 会自动填充这里 -->
+        <div style="text-align:center; padding: 20px; opacity: 0.7;">
+            <i class="fas fa-spinner fa-spin"></i> 正在加载文章...
+        </div>
+    </div>
+
+    <!-- 阅读视图 -->
+    <div id="reader-view" class="glass-card">
+        <div class="reader-header">
+            <button class="btn-icon" onclick="goHome()"><i class="fas fa-arrow-left"></i></button>
+            <h3 id="reader-title" style="margin:0; align-self:center;"></h3>
+            <button class="btn-icon" id="download-btn" onclick="downloadCurrentFile()"><i class="fas fa-download"></i></button>
+        </div>
+        <div id="reader-content" class="reader-content"></div>
+    </div>
+
+    <!-- 归档弹窗 -->
+    <div id="archive-modal" class="modal" onclick="closeModal(event)">
+        <div class="modal-content">
+            <h3 style="margin-top:0; border-bottom:1px solid #444; padding-bottom:10px;">📂 文章归档</h3>
+            <div id="archive-list"></div>
+        </div>
+    </div>
+
+    <!-- 底部导航栏 (不动) -->
+    <div class="bottom-nav">
+        <div class="nav-item active" onclick="goHome()"><i class="fas fa-home"></i></div>
+        <div class="nav-item" onclick="showArchive()"><i class="fas fa-archive"></i></div> <!-- 归档功能 -->
+        <div class="nav-item"><i class="fas fa-user"></i></div>
+        <div class="nav-item"><i class="fab fa-github"></i></div>
+    </div>
 
     <script>
-        // ==========================================
-        // ⚙️ 修复后的逻辑配置
-        // ==========================================
-        const CONFIG = {
-            username: 'LafiteLF',
-            repo: 'LafiteLF.github.io', // 你的仓库名
-            path: 'blog' // 你的 Markdown 文件夹
+        // --- 配置 ---
+        const GITHUB_USER = 'LafiteLF'; // 你的 GitHub 用户名
+        const GITHUB_REPO = 'LafiteLF.github.io'; // 你的仓库名
+        const BLOG_PATH = 'blog'; // 存放 md 文件的文件夹
+
+        // --- 状态 ---
+        let allFiles = []; // 存储所有获取到的文件信息
+
+        // --- 初始化 ---
+        window.onload = function() {
+            fetchFiles();
         };
 
-        const contentArea = document.getElementById('content-area');
-
-        // 初始化路由
-        window.addEventListener('hashchange', router);
-        window.addEventListener('load', router);
-
-        function router() {
-            const hash = window.location.hash;
-            if (!hash || hash === '#/') {
-                loadHome();
-            } else if (hash.startsWith('#/post/')) {
-                const fileName = hash.replace('#/post/', '');
-                loadArticle(fileName);
-            } else if (hash === '#/archive') {
-                loadArchive();
-            }
-        }
-
-        // 1. 加载首页 (文章列表)
-        async function loadHome() {
-            contentArea.innerHTML = '<p>正在加载文章列表...</p>';
+        // 1. 获取文件列表
+        async function fetchFiles() {
+            const apiUrl = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${BLOG_PATH}`;
 
             try {
-                // 使用 GitHub Contents API
-                const res = await fetch(`https://api.github.com/repos/${CONFIG.username}/${CONFIG.repo}/contents/${CONFIG.path}`);
+                const response = await fetch(apiUrl);
+                if (!response.ok) throw new Error('网络响应错误');
 
-                if (!res.ok) throw new Error('无法连接到 GitHub 仓库，请检查网络或仓库设置');
+                const data = await response.json();
+                // 过滤只保留 .md 文件
+                allFiles = data.filter(item => item.name.endsWith('.md'));
 
-                const files = await res.json();
-                // 过滤 Markdown 文件并按时间倒序
-                const posts = files
-                    .filter(f => f.name.endsWith('.md'))
-                    .sort((a, b) => new Date(b.sha) - new Date(a.sha)); // 简单的排序，依赖提交时间或文件名
-
-                if (posts.length === 0) {
-                    contentArea.innerHTML = '<p>博客文件夹是空的，快去写第一篇吧！</p>';
+                if (allFiles.length === 0) {
+                    document.getElementById('article-list').innerHTML = '<div style="text-align:center; padding:20px;">暂无文章</div>';
                     return;
                 }
 
-                let html = '';
-                posts.forEach(file => {
-                    // 简单提取标题（去掉.md后缀）
-                    const title = file.name.replace('.md', '');
-                    html += `
-                        <div class="post-card" onclick="window.location.hash='#/post/${file.name}'">
-                            <h3 class="post-title">${title}</h3>
-                            <span class="post-date"><i class="far fa-clock"></i> 点击阅读</span>
-                            <p class="post-excerpt">查看关于 ${title} 的详细内容...</p>
-                        </div>
-                    `;
-                });
-                contentArea.innerHTML = html;
+                renderList(allFiles);
 
-            } catch (err) {
-                contentArea.innerHTML = `
-                    <div style="color: #ffcccc;">
-                        <i class="fas fa-exclamation-circle"></i> 加载失败<br>
-                        <small>${err.message}</small>
+            } catch (error) {
+                console.error(error);
+                document.getElementById('article-list').innerHTML = `
+                    <div style="text-align:center; padding:20px; color:#ffcccc;">
+                        <i class="fas fa-exclamation-circle"></i><br>
+                        无法加载文章<br>
+                        <small>${error.message}</small>
                     </div>`;
             }
         }
 
-        // 2. 加载归档页面
-        async function loadArchive() {
-            contentArea.innerHTML = '<p>正在加载归档...</p>';
+        // 2. 渲染列表
+        function renderList(files) {
+            const listContainer = document.getElementById('article-list');
+            listContainer.innerHTML = ''; // 清空加载动画
+
+            files.forEach(file => {
+                // 去掉 .md 后缀作为标题
+                const title = file.name.replace('.md', '');
+
+                const item = document.createElement('div');
+                item.className = 'article-item';
+                item.innerHTML = `
+                    <div class="article-icon"><i class="fas fa-file-alt"></i></div>
+                    <div class="article-info">
+                        <div class="article-title">${title}</div>
+                        <div class="article-meta">${file.name}</div> <!-- 显示文件名 -->
+                    </div>
+                `;
+                // 点击跳转阅读
+                item.onclick = (e) => {
+                    e.stopPropagation();
+                    openReader(file);
+                };
+                listContainer.appendChild(item);
+            });
+        }
+
+        // 3. 打开阅读器
+        async function openReader(file) {
+            // 切换视图
+            document.getElementById('article-list').style.display = 'none';
+            document.querySelector('.header').style.display = 'none';
+            const readerView = document.getElementById('reader-view');
+            readerView.style.display = 'block';
+
+            // 设置标题
+            document.getElementById('reader-title').innerText = file.name.replace('.md', '');
 
             try {
-                const res = await fetch(`https://api.github.com/repos/${CONFIG.username}/${CONFIG.repo}/contents/${CONFIG.path}`);
-                const files = await res.json();
-                const posts = files.filter(f => f.name.endsWith('.md'));
+                // 获取文件具体内容
+                const response = await fetch(file.download_url); // 使用 download_url 获取原始内容
+                const text = await response.text();
 
-                let html = '<h2><i class="fas fa-archive"></i> 文章归档</h2><ul class="archive-list">';
-                posts.forEach(file => {
-                    const title = file.name.replace('.md', '');
-                    html += `
-                        <li class="archive-item">
-                            <a href="#/post/${file.name}" class="archive-link">
-                                <span>${title}</span>
-                                <i class="fas fa-chevron-right" style="font-size: 0.8rem;"></i>
-                            </a>
-                        </li>
-                    `;
-                });
-                html += '</ul>';
-                contentArea.innerHTML = html;
+                // 解析 Markdown
+                document.getElementById('reader-content').innerHTML = marked.parse(text);
+
+                // 保存当前文件下载链接到按钮
+                const downloadBtn = document.getElementById('download-btn');
+                downloadBtn.onclick = () => downloadFile(file.download_url, file.name);
 
             } catch (err) {
-                contentArea.innerHTML = '<p>归档加载失败</p>';
+                document.getElementById('reader-content').innerHTML = '<p>内容加载失败</p>';
             }
         }
 
-        // 3. 加载文章内容 + 下载功能
-        async function loadArticle(fileName) {
-            contentArea.innerHTML = '<p>正在加载文章...</p>';
+        // 4. 返回首页
+        function goHome() {
+            document.getElementById('reader-view').style.display = 'none';
+            document.getElementById('article-list').style.display = 'flex';
+            document.querySelector('.header').style.display = 'block';
+        }
 
-            try {
-                // 第一步：获取文件元数据
-                const metaRes = await fetch(`https://api.github.com/repos/${CONFIG.username}/${CONFIG.repo}/contents/${CONFIG.path}/${fileName}`);
-                const metaData = await metaRes.json();
+        // 5. 下载功能
+        function downloadFile(url, filename) {
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
 
-                // 第二步：获取文件原始内容
-                const contentRes = await fetch(metaData.download_url);
-                const text = await contentRes.text();
+        // 6. 归档功能 (弹窗)
+        function showArchive() {
+            const modal = document.getElementById('archive-modal');
+            const list = document.getElementById('archive-list');
+            list.innerHTML = '';
 
-                // 解析 Markdown
-                const htmlContent = marked.parse(text);
+            if(allFiles.length === 0) {
+                list.innerHTML = '<div style="color:#888; padding:10px;">暂无归档</div>';
+            } else {
+                allFiles.forEach(file => {
+                    const div = document.createElement('div');
+                    div.className = 'modal-item';
+                    div.innerText = file.name;
+                    div.onclick = (e) => {
+                        e.stopPropagation();
+                        modal.style.display = 'none';
+                        openReader(file);
+                    };
+                    list.appendChild(div);
+                });
+            }
+            modal.style.display = 'flex';
+        }
 
-                // 渲染页面 (包含下载按钮)
-                contentArea.innerHTML = `
-                    <div class="article-view">
-                        <a href="#/" class="back-btn" title="返回首页"><i class="fas fa-home"></i></a>
-                        <a href="${metaData.download_url}" download="${fileName}" class="back-btn" style="top: 10px; right: 55px;" title="下载源码">
-                            <i class="fas fa-download"></i>
-                        </a>
-                        <div class="content-body">
-                            ${htmlContent}
-                        </div>
-                    </div>
-                `;
-
-            } catch (err) {
-                contentArea.innerHTML = '<p>文章加载失败，文件可能不存在。</p>';
+        function closeModal(e) {
+            if (e.target.id === 'archive-modal') {
+                e.target.style.display = 'none';
             }
         }
     </script>
