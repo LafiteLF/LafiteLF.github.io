@@ -2,10 +2,12 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LafiteLF's Blog</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>LafiteLF's Blog | 数字边界·生活点滴</title>
+    <!-- 引入 marked.js 用于 Markdown 解析 (CDN 优化，带备用) -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- Font Awesome 6 (免费图标库，用于增强UI但不依赖) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         /* ===== 全局变量 ===== */
         :root {
@@ -34,6 +36,9 @@
             min-height: 100vh;
             overflow-x: hidden;
             position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         /* ===== 动画库 ===== */
@@ -63,14 +68,8 @@
             transform: translateY(0);
         }
 
-        .animate-pulse {
-            animation: pulse var(--duration) infinite alternate;
-        }
-        @keyframes pulse {
-            from { transform: scale(1); }
-            to { transform: scale(1.02); }
-        }
-
+        /* 移除未使用的 animate-pulse，精简代码 */
+        
         /* ===== 顶部装饰头像 ===== */
         .top-decor {
             position: absolute;
@@ -114,6 +113,7 @@
             box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
             overflow-y: auto;
             position: relative;
+            transition: all var(--duration) var(--ease);
         }
 
         .left-panel::before {
@@ -168,6 +168,14 @@
         .markdown-body a:hover::after {
             transform: scaleX(1);
         }
+        /* 公告栏加载失败样式 */
+        .error-message {
+            color: #ffb4a2;
+            background: rgba(0,0,0,0.3);
+            padding: 12px;
+            border-radius: 16px;
+            text-align: center;
+        }
 
         /* ===== 右侧：博客区 ===== */
         .right-panel {
@@ -175,6 +183,7 @@
             display: flex;
             flex-direction: column;
             align-items: flex-end;
+            gap: 24px;
         }
 
         .profile-card {
@@ -282,6 +291,23 @@
             gap: 6px;
         }
 
+        /* 加载占位动画 */
+        .loading-placeholder {
+            text-align: center;
+            padding: 30px;
+            opacity: 0.8;
+        }
+        .loading-placeholder i {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            display: inline-block;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
         /* ===== 底部导航栏 (完全保留结构，增强动画) ===== */
         .bottom-nav {
             position: fixed;
@@ -299,6 +325,14 @@
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
             z-index: 100;
             transition: all var(--duration) var(--ease);
+        }
+        .bottom-nav.visible {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+        .bottom-nav:not(.visible) {
+            opacity: 0;
+            transform: translateX(-50%) translateY(20px);
         }
 
         .nav-item {
@@ -452,7 +486,8 @@
             padding: 40px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
             position: relative;
-            overflow: hidden;
+            overflow-y: auto;
+            max-height: 85vh;
             transform: scale(0.9);
             transition: transform var(--duration) var(--ease);
         }
@@ -476,6 +511,7 @@
             align-items: center;
             cursor: pointer;
             transition: all var(--duration) var(--ease);
+            z-index: 10;
         }
 
         .article-modal-close:hover {
@@ -517,238 +553,344 @@
         ::-webkit-scrollbar-thumb:hover {
             background: rgba(255, 255, 255, 0.3);
         }
+        
+        /* 响应式 */
+        @media (max-width: 780px) {
+            .main-container {
+                flex-direction: column;
+                align-items: center;
+                margin-top: 100px;
+                gap: 20px;
+            }
+            .left-panel, .right-panel {
+                max-width: 100%;
+                width: 100%;
+            }
+            .right-panel {
+                align-items: stretch;
+            }
+            .bottom-nav {
+                gap: 16px;
+                padding: 10px 20px;
+            }
+        }
     </style>
 </head>
 <body>
 
-    <!-- 顶部装饰 -->
-    <div class="top-decor"></div>
+<div class="top-decor"></div>
 
-    <!-- 主容器 -->
-    <div class="main-container">
-        <!-- 左侧：置顶公告 -->
-        <div class="left-panel animate-in">
-            <h2><i class="fas fa-thumbtack"></i> 置顶公告</h2>
-            <div id="top-content" class="markdown-body">加载中...</div>
-        </div>
-
-        <!-- 右侧：博客 -->
-        <div class="right-panel">
-            <div class="profile-card animate-in">
-                <img src="https://avatars.githubusercontent.com/u/187166523?s=96&v=4" alt="Avatar">
-                <h1>LafiteLF's Blog</h1>
-                <p>探索数字边界 · 记录生活点滴</p>
-            </div>
-
-            <div class="blog-list animate-in" id="blog-list">
-                <!-- 文章列表将由 JS 插入 -->
-            </div>
-        </div>
+<div class="main-container">
+    <!-- 左侧公告栏 (保持原结构) -->
+    <div class="left-panel animate-in" id="leftPanel">
+        <h2><i class="fas fa-bullhorn"></i> 置顶公告</h2>
+        <div id="top-content" class="markdown-body">加载中...</div>
     </div>
 
-    <!-- 底部导航栏 -->
-    <div class="bottom-nav animate-fade">
-        <div class="nav-item" onclick="reloadPage()"><i class="fas fa-home"></i></div>
-        <div class="nav-item" onclick="openArchive()"><i class="fas fa-archive"></i></div>
-        <div class="nav-item" onclick="alert('功能开发中')"><i class="fas fa-user"></i></div>
-        <div class="nav-item" onclick="window.open('https://github.com/LafiteLF', '_blank')"><i class="fab fa-github"></i></div>
-    </div>
-
-    <!-- 归档弹窗 -->
-    <div class="archive-modal" id="archive-modal">
-        <div class="archive-content">
-            <div class="archive-header">
-                <h3 class="archive-title"><i class="fas fa-file-alt"></i> 文章归档</h3>
-                <button class="archive-close" onclick="closeArchive()"><i class="fas fa-times"></i></button>
-            </div>
-            <div id="archive-list"></div>
+    <!-- 右侧区域 -->
+    <div class="right-panel">
+        <div class="profile-card animate-in">
+            <img src="https://avatars.githubusercontent.com/u/187166523?s=96&v=4" alt="avatar">
+            <h1>LafiteLF's Blog</h1>
+            <p>探索数字边界 · 记录生活点滴</p>
+        </div>
+        <div class="blog-list animate-in" id="blogListContainer">
+            <div id="blog-list" class="loading-placeholder"><i class="fas fa-spinner"></i> 加载文章列表...</div>
         </div>
     </div>
+</div>
 
-    <!-- 文章阅读模态框 -->
-    <div class="article-modal" id="article-modal">
-        <div class="article-modal-content">
-            <button class="article-modal-close" onclick="closeArticleModal()"><i class="fas fa-times"></i></button>
-            <h1 id="article-title">文章标题</h1>
-            <div id="article-body" class="markdown-body"></div>
+<!-- 底部导航栏 -->
+<div class="bottom-nav" id="bottomNav">
+    <div class="nav-item" onclick="reloadPage()" title="刷新"><i class="fas fa-sync-alt"></i></div>
+    <div class="nav-item" onclick="openArchive()" title="归档"><i class="fas fa-archive"></i></div>
+    <div class="nav-item" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="回到顶部"><i class="fas fa-arrow-up"></i></div>
+</div>
+
+<!-- 归档模态框 -->
+<div id="archive-modal" class="archive-modal">
+    <div class="archive-content">
+        <div class="archive-header">
+            <span class="archive-title"><i class="fas fa-archive"></i> 文章归档</span>
+            <button class="archive-close" onclick="closeArchive()"><i class="fas fa-times"></i></button>
         </div>
+        <div id="archive-list">加载中...</div>
     </div>
+</div>
 
-    <script>
-        // 配置
-        const USER = 'LafiteLF';
-        const REPO = 'LafiteLF.github.io';
-        const BLOG_DIR = 'blog'; // 你的文章目录名
-        const TOP_FILE = 'top.md';
+<!-- 文章阅读模态框 -->
+<div id="article-modal" class="article-modal" style="pointer-events: none;">
+    <div class="article-modal-content">
+        <button class="article-modal-close" onclick="closeArticleModal()"><i class="fas fa-times"></i></button>
+        <h1 id="article-title">文章标题</h1>
+        <div id="article-body" class="markdown-body">内容加载中...</div>
+    </div>
+</div>
 
-        // 公共函数：获取原始文本（关键修复！）
-        async function fetchRawText(path) {
-            const url = `https://raw.githubusercontent.com/${USER}/${REPO}/main/${path}`;
+<script>
+    // ========== 配置 ==========
+    const USER = 'LafiteLF';
+    const REPO = 'LafiteLF.github.io';
+    const BLOG_DIR = 'blog';
+    const TOP_FILE = 'top.md';
+    
+    // 简单缓存 (sessionStorage) 降低重复请求
+    const CACHE_PREFIX = 'blog_cache_';
+    const CACHE_TTL = 10 * 60 * 1000; // 10分钟缓存
+    
+    // 封装 fetch 带超时和重试 (健壮性)
+    async function fetchWithTimeout(url, timeout = 8000) {
+        const controller = new AbortController();
+        const id = setTimeout(() => controller.abort(), timeout);
+        try {
+            const response = await fetch(url, { signal: controller.signal });
+            clearTimeout(id);
+            return response;
+        } catch (err) {
+            clearTimeout(id);
+            throw err;
+        }
+    }
+    
+    // 获取原始文本 (核心修复: 正确的模板字符串，错误重试)
+    async function fetchRawText(path, retries = 1) {
+        const url = `https://raw.githubusercontent.com/${USER}/${REPO}/main/${path}`;
+        try {
+            const res = await fetchWithTimeout(url);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            return await res.text();
+        } catch (err) {
+            console.error(`获取文件失败 [${path}]:`, err);
+            if (retries > 0) {
+                await new Promise(r => setTimeout(r, 600));
+                return fetchRawText(path, retries - 1);
+            }
+            return null;
+        }
+    }
+    
+    // 利用缓存获取文件 (用于列表等)
+    async function fetchWithCache(key, fetcher, ttl = CACHE_TTL) {
+        const cacheKey = CACHE_PREFIX + key;
+        const cached = sessionStorage.getItem(cacheKey);
+        if (cached) {
             try {
-                const res = await fetch(url);
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                return await res.text();
-            } catch (err) {
-                console.error('获取文件失败:', path, err);
-                return null;
-            }
+                const { data, timestamp } = JSON.parse(cached);
+                if (Date.now() - timestamp < ttl) return data;
+            } catch(e) { /* 忽略解析错误 */ }
         }
-
-        // 1. 加载置顶公告
-        async function loadTopContent() {
-            const el = document.getElementById('top-content');
-            const text = await fetchRawText(TOP_FILE);
-            if (text) {
-                el.innerHTML = marked.parse(text);
-            } else {
-                el.innerHTML = `<p style="color:#ff7eb3; font-style:italic;">未找到 ${TOP_FILE} 或加载失败</p>`;
-            }
-            document.querySelector('.left-panel').classList.add('visible');
+        const freshData = await fetcher();
+        if (freshData) {
+            sessionStorage.setItem(cacheKey, JSON.stringify({ data: freshData, timestamp: Date.now() }));
         }
-
-        // 2. 加载文章列表
-        async function loadBlogList() {
-            const listEl = document.getElementById('blog-list');
-            const text = await fetchRawText(`${BLOG_DIR}/index.json`);
-            let files = [];
-
-            if (text) {
-                try {
-                    files = JSON.parse(text);
-                } catch (e) {
-                    console.warn('index.json 解析失败，回退到目录扫描');
-                }
-            }
-
-            // 如果没有 index.json，则扫描目录
-            if (files.length === 0) {
-                try {
-                    const dirRes = await fetch(`https://api.github.com/repos/${USER}/${REPO}/contents/${BLOG_DIR}`);
-                    const dirData = await dirRes.json();
-                    files = dirData.filter(f => f.name.endsWith('.md')).map(f => ({
-                        name: f.name,
-                        path: f.path,
-                        sha: f.sha
-                    }));
-                } catch (e) {
-                    console.error('目录扫描失败', e);
-                    listEl.innerHTML = '<p style="text-align:center; opacity:0.6;">无法加载文章列表</p>';
-                    document.querySelector('.blog-list').classList.add('visible');
-                    return;
-                }
-            }
-
-            // 按文件名倒序（最新在前）
-            files.sort((a, b) => b.name.localeCompare(a.name));
-
-            listEl.innerHTML = '';
-            files.forEach(file => {
-                const item = document.createElement('div');
-                item.className = 'blog-item';
-                const title = file.name.replace('.md', '');
-                item.innerHTML = `
-                    <h3>${title}</h3>
-                    <div class="date"><i class="far fa-calendar-alt"></i> ${file.name.split('-')[0]}</div>
-                `;
-                item.onclick = () => openArticleModal(file.path, title);
-                listEl.appendChild(item);
-            });
-
-            document.querySelector('.blog-list').classList.add('visible');
+        return freshData;
+    }
+    
+    // 获取文章列表 (使用 index.json 或 github api)
+    async function fetchBlogFiles() {
+        // 尝试 index.json
+        const indexText = await fetchRawText(`${BLOG_DIR}/index.json`);
+        if (indexText) {
+            try {
+                const parsed = JSON.parse(indexText);
+                if (Array.isArray(parsed) && parsed.length) return parsed;
+            } catch(e) { console.warn('index.json解析失败', e); }
         }
-
-        // 3. 打开文章模态框
-        async function openArticleModal(path, title) {
-            const modal = document.getElementById('article-modal');
-            const titleEl = document.getElementById('article-title');
-            const bodyEl = document.getElementById('article-body');
-
-            titleEl.textContent = title;
-            bodyEl.innerHTML = '<p style="opacity:0.6;">加载中...</p>';
-
-            const text = await fetchRawText(path);
-            if (text) {
-                bodyEl.innerHTML = marked.parse(text);
-            } else {
-                bodyEl.innerHTML = `<p style="color:#ff7eb3;">文章内容加载失败，请检查路径：${path}</p>`;
+        // 回退: GitHub API 获取目录内容
+        const apiUrl = `https://api.github.com/repos/${USER}/${REPO}/contents/${BLOG_DIR}`;
+        try {
+            const response = await fetchWithTimeout(apiUrl);
+            if (!response.ok) throw new Error(`API ${response.status}`);
+            const data = await response.json();
+            if (Array.isArray(data)) {
+                return data
+                    .filter(f => f.name && f.name.endsWith('.md'))
+                    .map(f => ({ name: f.name, path: f.path, sha: f.sha }));
             }
-
-            modal.classList.add('active');
-            modal.style.pointerEvents = 'auto';
+            return [];
+        } catch (err) {
+            console.error('获取目录失败:', err);
+            return null;
         }
-
-        // 4. 关闭文章模态框
-        function closeArticleModal() {
-            document.getElementById('article-modal').classList.remove('active');
-            setTimeout(() => {
-                document.getElementById('article-modal').style.pointerEvents = 'none';
-            }, 400);
-        }
-
-        // 5. 打开归档弹窗
-        async function openArchive() {
-            const modal = document.getElementById('archive-modal');
-            const listEl = document.getElementById('archive-list');
-            listEl.innerHTML = '<p style="padding:20px; text-align:center; opacity:0.6;">加载中...</p>';
-
-            const text = await fetchRawText(`${BLOG_DIR}/index.json`);
-            let files = [];
-
-            if (text) {
-                try {
-                    files = JSON.parse(text);
-                } catch (e) {}
+    }
+    
+    // 1. 加载置顶公告 (带错误处理和优雅降级)
+    async function loadTopContent() {
+        const topDiv = document.getElementById('top-content');
+        const text = await fetchRawText(TOP_FILE, 1);
+        if (text && text.trim()) {
+            try {
+                topDiv.innerHTML = marked.parse(text);
+            } catch(e) {
+                topDiv.innerHTML = `<div class="error-message">Markdown解析错误</div>`;
             }
-
-            if (files.length === 0) {
-                try {
-                    const dirRes = await fetch(`https://api.github.com/repos/${USER}/${REPO}/contents/${BLOG_DIR}`);
-                    const dirData = await dirRes.json();
-                    files = dirData.filter(f => f.name.endsWith('.md'));
-                } catch (e) {
-                    listEl.innerHTML = '<p style="color:#ff7eb3;">加载失败</p>';
-                    return;
-                }
-            }
-
-            listEl.innerHTML = '';
-            files.forEach(file => {
-                const div = document.createElement('div');
-                div.className = 'archive-item';
-                const title = file.name.replace('.md', '');
-                div.innerHTML = `<i class="fas fa-book-open"></i> ${title}`;
-                div.onclick = () => {
-                    closeArchive();
-                    openArticleModal(file.path, title);
-                };
-                listEl.appendChild(div);
-            });
-
-            modal.classList.add('active');
+        } else {
+            topDiv.innerHTML = `<div class="error-message">⚠️ 置顶公告加载失败，请检查网络或确认 top.md 存在。</div>`;
         }
-
-        // 6. 关闭归档弹窗
-        function closeArchive() {
-            document.getElementById('archive-modal').classList.remove('active');
+        // 动画触发
+        document.getElementById('leftPanel')?.classList.add('visible');
+    }
+    
+    // 格式化日期 (从文件名提取 YYYY-MM-DD)
+    function extractDate(filename) {
+        const match = filename.match(/^(\d{4}-\d{2}-\d{2})/);
+        return match ? match[1] : '未知日期';
+    }
+    
+    // 2. 加载文章列表 (增强性能和错误)
+    async function loadBlogList() {
+        const listContainer = document.getElementById('blog-list');
+        // 显示骨架
+        listContainer.innerHTML = `<div class="loading-placeholder"><i class="fas fa-spinner"></i> 加载文章列表...</div>`;
+        
+        const files = await fetchWithCache('blog_list', fetchBlogFiles, CACHE_TTL);
+        if (!files || files.length === 0) {
+            listContainer.innerHTML = `<div class="error-message"><i class="fas fa-exclamation-circle"></i> 未找到任何文章，请确保 blog 目录下有 .md 文件或 index.json。</div>`;
+            document.querySelector('.blog-list')?.classList.add('visible');
+            return;
         }
-
-        // 7. 页面加载完成
-        window.addEventListener('DOMContentLoaded', () => {
-            // 触发动画
-            setTimeout(() => {
-                document.querySelectorAll('.animate-in').forEach(el => el.classList.add('visible'));
-                document.querySelector('.bottom-nav').classList.add('visible');
-            }, 200);
-
-            // 加载数据
-            loadTopContent();
-            loadBlogList();
+        
+        // 排序: 按文件名倒序 (新文章在前)
+        const sorted = [...files].sort((a, b) => b.name.localeCompare(a.name));
+        listContainer.innerHTML = '';
+        sorted.forEach(file => {
+            const item = document.createElement('div');
+            item.className = 'blog-item';
+            const title = file.name.replace(/\.md$/i, '');
+            const dateStr = extractDate(file.name);
+            item.innerHTML = `
+                <h3><i class="fas fa-file-alt" style="margin-right: 8px; color: var(--accent);"></i>${escapeHtml(title)}</h3>
+                <div class="date"><i class="far fa-calendar-alt"></i> ${escapeHtml(dateStr)}</div>
+            `;
+            item.onclick = () => openArticleModal(file.path, title);
+            listContainer.appendChild(item);
         });
-
-        // 8. 便捷刷新
-        function reloadPage() {
-            location.reload();
+        
+        document.querySelector('.blog-list')?.classList.add('visible');
+    }
+    
+    // 简单的防XSS辅助
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
+            return c;
+        });
+    }
+    
+    // 3. 打开文章模态框 (添加加载指示器)
+    async function openArticleModal(path, title) {
+        const modal = document.getElementById('article-modal');
+        const titleEl = document.getElementById('article-title');
+        const bodyEl = document.getElementById('article-body');
+        
+        titleEl.textContent = title || '文章';
+        bodyEl.innerHTML = `<div class="loading-placeholder"><i class="fas fa-spinner"></i> 正在加载文章...</div>`;
+        modal.classList.add('active');
+        modal.style.pointerEvents = 'auto';
+        
+        const text = await fetchRawText(path, 1);
+        if (text && text.trim()) {
+            try {
+                bodyEl.innerHTML = marked.parse(text);
+                // 为所有链接添加外部网站特性
+                bodyEl.querySelectorAll('a').forEach(a => a.setAttribute('target', '_blank'));
+            } catch(e) {
+                bodyEl.innerHTML = `<div class="error-message">文章解析失败。</div>`;
+            }
+        } else {
+            bodyEl.innerHTML = `<div class="error-message">❌ 文章内容加载失败，路径: ${escapeHtml(path)}</div>`;
         }
-    </script>
+    }
+    
+    // 4. 关闭文章模态框
+    function closeArticleModal() {
+        const modal = document.getElementById('article-modal');
+        modal.classList.remove('active');
+        setTimeout(() => {
+            modal.style.pointerEvents = 'none';
+        }, 400);
+    }
+    
+    // 5. 打开归档弹窗 (复用现有逻辑 + 缓存)
+    async function openArchive() {
+        const modal = document.getElementById('archive-modal');
+        const listEl = document.getElementById('archive-list');
+        listEl.innerHTML = `<div class="loading-placeholder"><i class="fas fa-spinner"></i> 加载归档...</div>`;
+        modal.classList.add('active');
+        
+        const files = await fetchWithCache('blog_list', fetchBlogFiles, CACHE_TTL);
+        if (!files || files.length === 0) {
+            listEl.innerHTML = `<div class="error-message">暂无文章归档</div>`;
+            return;
+        }
+        const sorted = [...files].sort((a, b) => b.name.localeCompare(a.name));
+        listEl.innerHTML = '';
+        sorted.forEach(file => {
+            const div = document.createElement('div');
+            div.className = 'archive-item';
+            const title = file.name.replace(/\.md$/i, '');
+            const datePart = extractDate(file.name);
+            div.innerHTML = `<i class="fas fa-file-alt"></i> <span><strong>${escapeHtml(title)}</strong><br><small style="opacity:0.7;">${escapeHtml(datePart)}</small></span>`;
+            div.onclick = () => {
+                closeArchive();
+                openArticleModal(file.path, title);
+            };
+            listEl.appendChild(div);
+        });
+    }
+    
+    function closeArchive() {
+        document.getElementById('archive-modal')?.classList.remove('active');
+    }
+    
+    // 刷新页面方法
+    function reloadPage() {
+        // 清除关键缓存让数据重新获取（可选）
+        sessionStorage.removeItem(CACHE_PREFIX + 'blog_list');
+        location.reload();
+    }
+    
+    // 页面加载: 处理所有动画和请求
+    window.addEventListener('DOMContentLoaded', () => {
+        // 为所有 animate-in 元素添加渐现
+        setTimeout(() => {
+            document.querySelectorAll('.animate-in').forEach(el => el.classList.add('visible'));
+            const bottomNav = document.getElementById('bottomNav');
+            if (bottomNav) bottomNav.classList.add('visible');
+        }, 100);
+        
+        // 加载数据
+        loadTopContent();
+        loadBlogList();
+        
+        // 点击模态框背景关闭 (体验增强)
+        const articleModal = document.getElementById('article-modal');
+        articleModal.addEventListener('click', (e) => {
+            if (e.target === articleModal) closeArticleModal();
+        });
+        const archiveModal = document.getElementById('archive-modal');
+        archiveModal.addEventListener('click', (e) => {
+            if (e.target === archiveModal) closeArchive();
+        });
+        
+        // 预加载 marked 库检测，若未加载则回退模拟
+        if (typeof marked === 'undefined') {
+            console.warn('marked库未加载，Markdown将显示原始文本');
+            window.marked = { parse: (t) => `<pre>${escapeHtml(t)}</pre>` };
+        }
+    });
+    
+    // 暴露全局函数供内联调用
+    window.reloadPage = reloadPage;
+    window.openArchive = openArchive;
+    window.closeArchive = closeArchive;
+    window.closeArticleModal = closeArticleModal;
+    window.openArticleModal = openArticleModal;
+</script>
 </body>
 </html>
