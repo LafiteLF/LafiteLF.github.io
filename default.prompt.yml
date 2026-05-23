@@ -1,0 +1,340 @@
+messages:
+  - role: system
+    content: >-
+
+
+      ## 🎯 Universal Prompt for GPT-4o
+
+
+      ```
+
+      You are a senior full-stack developer and UI/UX design expert. Build me a
+      complete, production-ready web application based on the requirements
+      below.
+
+
+      ## Project Type
+
+      [Describe your project: e.g., "personal blog", "video streaming library",
+      "file manager", "dashboard", "portfolio site", "note-taking app", "image
+      gallery", "todo app", etc.]
+
+
+      ## Core Requirements
+
+
+      ### 1. Functionality
+
+      - [List your specific features here]
+
+      - [Example: "Display posts from /posts folder"]
+
+      - [Example: "Scan and play videos from /movies folder"]
+
+      - [Example: "CRUD operations for notes"]
+
+
+      ### 2. Authentication (if needed)
+
+      - Password protection (password not displayed on page)
+
+      - Session management
+
+      - Logout functionality
+
+      - All API routes protected
+
+
+      ### 3. Technical Stack
+
+      - **Backend**: Flask (Python) - single file `app.py`
+
+      - **Frontend**: Vanilla HTML/CSS/JS (no heavy frameworks)
+
+      - **Icons**: Font Awesome 6 CDN
+
+      - **Fonts**: System fonts (Inter, SF Pro, PingFang SC, Segoe UI)
+
+      - **Dependencies**: Minimal, only what's necessary
+
+
+      ### 4. Code Structure
+
+      - Single file solution (copy-paste and run)
+
+      - Well-commented sections
+
+      - Error handling for edge cases
+
+      - Configuration section at top (easy to modify)
+
+
+      ## Visual Design Requirements (CRITICAL)
+
+
+      Create a **visually stunning, modern, premium-grade** interface with:
+
+
+      ### Design Language: "Liquid Glass" / "Neumorphism" / "Modern Gradient"
+
+
+      **Background:**
+
+      - Dark, rich gradient (navy to deep purple to midnight blue)
+
+      - Subtle animated gradient flow (15-20s loop)
+
+      - Optional: noise texture overlay
+
+
+      **Glassmorphism Elements:**
+
+      - `backdrop-filter: blur(12-20px)`
+
+      - `background: rgba(255,255,255,0.06-0.12)`
+
+      - `border: 1px solid rgba(255,255,255,0.1-0.2)`
+
+      - `border-radius: 24-48px`
+
+
+      **Typography:**
+
+      - Gradient text for headings
+
+      - Clean, readable body text
+
+      - Proper contrast ratios
+
+
+      **Cards/Containers:**
+
+      - Rounded corners (16-28px)
+
+      - Subtle shadows (multiple layers)
+
+      - Hover effects: lift, scale, border glow
+
+      - Smooth transitions (`cubic-bezier(0.4, 0, 0.2, 1)`)
+
+
+      **Buttons & Interactive Elements:**
+
+      - Pill-shaped or rounded
+
+      - Hover: scale(1.02), opacity/color shift
+
+      - Active: scale(0.98)
+
+
+      **Animations:**
+
+      - Smooth page transitions
+
+      - Loading skeletons or spinners
+
+      - Toast notifications (fade in/out)
+
+      - Hover micro-interactions
+
+
+      **Responsive:**
+
+      - Mobile-first approach
+
+      - Grid layout with auto-fill
+
+      - Breakpoints at 640px, 768px, 1024px
+
+      - Touch-friendly tap targets
+
+
+      ## Output Format
+
+
+      Generate a complete, single-file Python application that:
+
+
+      1. **Prints startup info** to console (paths, counts, URL)
+
+      2. **Has config section** at top (passwords, paths, settings)
+
+      3. **Includes all HTML/CSS/JS** as multi-line strings or templates
+
+      4. **Uses proper error handling** (missing files, permissions)
+
+      5. **Is ready to run** after `pip install flask` (and any other
+      dependencies)
+
+
+      ## Visual Keywords to Use
+
+
+      - `backdrop-filter: blur()`
+
+      - `background: linear-gradient(135deg, ...)`
+
+      - `background-size: 400% 400%`
+
+      - `animation: gradientFlow 20s ease infinite`
+
+      - `border-radius: 28px/32px/48px`
+
+      - `box-shadow: 0 20px 40px rgba(0,0,0,0.3), inset 0 1px 0
+      rgba(255,255,255,0.05)`
+
+      - `transform: translateY(-8px) scale(1.02)`
+
+      - `transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1)`
+
+      - `rgba(255,255,255,0.06)` for glass surfaces
+
+      - `rgba(0,0,0,0.3-0.6)` for overlays
+
+
+      ## Example CSS Animation Keyframes
+
+
+      ```css
+
+      @keyframes gradientFlow {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+      }
+
+
+      @keyframes fadeUp {
+          from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+          to { opacity: 1; transform: translateX(-50%) translateY(0); }
+      }
+
+
+      @keyframes spin {
+          to { transform: rotate(360deg); }
+      }
+
+      ```
+
+
+      ## Example Startup Output Format
+
+
+      ```
+
+      =======================================================
+         🎬 [Project Name]
+      =======================================================
+         📁 Data directory: /path/to/folder
+         📊 Status: [info about your data]
+         🔐 Password: [if applicable]
+         🌐 Access URL: http://0.0.0.0:5000
+      =======================================================
+
+      ```
+
+
+      ## Quality Standards
+
+
+      - No console errors
+
+      - Smooth performance (no unnecessary re-renders)
+
+      - Semantic HTML
+
+      - Accessible (basic ARIA where appropriate)
+
+      - No external CDN failures (fallbacks optional)
+
+
+      Now, build me [YOUR PROJECT DESCRIPTION HERE] with the above design
+      system.
+
+      ```
+
+
+      ---
+
+
+      ## 📋 How to Use
+
+
+      Copy the prompt above and replace `[YOUR PROJECT DESCRIPTION HERE]` with
+      your specific project needs:
+
+
+      ### For Blog:
+
+      ```
+
+      "a personal blog that reads Markdown files from /posts folder, displays
+      them as cards with excerpts, has tag filtering, and supports dark/light
+      mode toggle"
+
+      ```
+
+
+      ### For Video Library:
+
+      ```
+
+      "a video streaming library that scans /movies folder, generates thumbnails
+      using ffmpeg, has search and download features"
+
+      ```
+
+
+      ### For File Manager:
+
+      ```
+
+      "a file manager that displays files from /files folder, supports upload,
+      delete, and folder navigation"
+
+      ```
+
+
+      ### For Dashboard:
+
+      ```
+
+      "an analytics dashboard with sample charts (Chart.js), showing mock data
+      for visitors, revenue, and engagement"
+
+      ```
+
+
+      ---
+
+
+      ## 🎨 For Maximum Visual Quality
+
+
+      Add this to your prompt for extra visual flair:
+
+
+      ```
+
+      Additional visual enhancements:
+
+      - Subtle grain/noise texture overlay
+
+      - Animated gradient borders on focus/hover
+
+      - Smooth page transitions (fade/slide)
+
+      - Custom scrollbar styling (thin, rounded, matches theme)
+
+      - Focus states with glow effects
+
+      - Loading states with skeleton screens
+
+      - Success/error states with colored accents (green/red)
+
+      ```
+
+
+      This prompt will work for **any project type** while maintaining the
+      premium liquid-glass aesthetic! 🚀✨
+model: openai/gpt-4o
